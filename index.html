@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeepSecure™ | AI Governance Enforcement at the Execution Layer</title>
+  <meta name="description" content="DeepSecure™ is a cloud-native AI governance enforcement architecture that embeds real-time control activation, escalation logic, and audit-grade evidence generation into SOC and cloud environments." />
+  <style>
+    :root {
+      --bg: #060812;
+      --panel: rgba(255, 255, 255, 0.07);
+      --panel-strong: rgba(255, 255, 255, 0.11);
+      --text: #f4f7fb;
+      --muted: #aab6ca;
+      --line: rgba(255, 255, 255, 0.14);
+      --accent: #52f0ff;
+      --accent-2: #8b5cf6;
+      --success: #4ade80;
+      --warning: #facc15;
+      --danger: #fb7185;
+      --shadow: 0 28px 80px rgba(0, 0, 0, 0.45);
+      --radius: 28px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(82, 240, 255, 0.14), transparent 28%),
+        radial-gradient(circle at 80% 5%, rgba(139, 92, 246, 0.18), transparent 30%),
+        radial-gradient(circle at 50% 80%, rgba(74, 222, 128, 0.08), transparent 26%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .grain {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      opacity: 0.28;
+      background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: radial-gradient(circle at center, black, transparent 78%);
+      z-index: 0;
+    }
+
+    .container {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(18px);
+      background: rgba(6, 8, 18, 0.72);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .nav {
+      min-height: 78px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      font-size: 1.25rem;
+    }
+
+    .mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: conic-gradient(from 180deg, var(--accent), var(--accent-2), var(--success), var(--accent));
+      box-shadow: 0 0 36px rgba(82, 240, 255, 0.35);
+      position: relative;
+    }
+
+    .mark::after {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border-radius: 9px;
+      background: var(--bg);
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      padding: 12px 18px;
+      border-radius: 999px;
+      font-weight: 700;
+      transition: transform 0.2s ease, background 0.2s ease, border 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      background: var(--panel-strong);
+      border-color: rgba(82, 240, 255, 0.6);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #020617;
+      border: 0;
+      box-shadow: 0 18px 45px rgba(82, 240, 255, 0.2);
+    }
+
+    .hero {
+      min-height: calc(100vh - 78px);
+      display: grid;
+      grid-template-columns: 1.04fr 0.96fr;
+      align-items: center;
+      gap: 54px;
+      padding: 76px 0;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid rgba(82, 240, 255, 0.3);
+      background: rgba(82, 240, 255, 0.08);
+      color: #c9fbff;
+      padding: 9px 13px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 0.82rem;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      margin-bottom: 22px;
+    }
+
+    .pulse {
+      width: 9px;
+      height: 9px;
+      background: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      70% { box-shadow: 0 0 0 12px rgba(74, 222, 128, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+    }
+
+    h1 {
+      font-size: clamp(3.2rem, 8vw, 7.2rem);
+      line-height: 0.88;
+      letter-spacing: -0.09em;
+      margin-bottom: 26px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(120deg, #ffffff, var(--accent), #c4b5fd);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 1.16rem;
+      max-width: 670px;
+      margin-bottom: 28px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+
+    .proof-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      max-width: 690px;
+    }
+
+    .proof {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.055);
+      padding: 15px;
+      border-radius: 20px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .proof strong {
+      color: var(--text);
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 2px;
+    }
+
+    .visual {
+      position: relative;
+      min-height: 560px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04)),
+        radial-gradient(circle at 50% 0%, rgba(82, 240, 255, 0.2), transparent 45%);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      padding: 28px;
+    }
+
+    .visual::before {
+      content: "";
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      border: 1px solid rgba(82, 240, 255, 0.16);
+      border-radius: 50%;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      box-shadow: inset 0 0 60px rgba(82, 240, 255, 0.08);
+    }
+
+    .orb {
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      top: 170px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 35% 25%, white, rgba(82,240,255,0.88) 18%, rgba(139,92,246,0.65) 44%, rgba(6,8,18,0.9) 72%);
+      box-shadow: 0 0 80px rgba(82, 240, 255, 0.35), inset 0 0 42px rgba(255,255,255,0.22);
+      animation: float 4.8s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      50% { transform: translateX(-50%) translateY(-16px) scale(1.02); }
+    }
+
+    .node {
+      position: absolute;
+      border: 1px solid var(--line);
+      background: rgba(6, 8, 18, 0.72);
+      backdrop-filter: blur(14px);
+      border-radius: 18px;
+      padding: 14px 16px;
+      min-width: 160px;
+      box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+    }
+
+    .node span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 2px;
+    }
+
+    .node strong {
+      font-size: 0.98rem;
+    }
+
+    .node.one { top: 46px; left: 28px; }
+    .node.two { top: 88px; right: 28px; }
+    .node.three { bottom: 120px; left: 35px; }
+    .node.four { bottom: 52px; right: 32px; }
+
+    .status-strip {
+      position: absolute;
+      left: 28px;
+      right: 28px;
+      bottom: 26px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .status {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(255,255,255,0.06);
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .status b {
+      color: var(--text);
+      display: block;
+    }
+
+    section {
+      padding: 92px 0;
+    }
+
+    .section-head {
+      max-width: 820px;
+      margin-bottom: 34px;
+    }
+
+    .kicker {
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-weight: 900;
+      font-size: 0.78rem;
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      font-size: clamp(2rem, 4.4vw, 4.2rem);
+      line-height: 0.98;
+      letter-spacing: -0.06em;
+      margin-bottom: 18px;
+    }
+
+    .section-head p {
+      color: var(--muted);
+      font-size: 1.08rem;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.045));
+      border-radius: var(--radius);
+      padding: 28px;
+      min-height: 250px;
+      box-shadow: 0 18px 55px rgba(0,0,0,0.16);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(82, 240, 255, 0.45);
+    }
+
+    .icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      background: rgba(82, 240, 255, 0.12);
+      border: 1px solid rgba(82, 240, 255, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 22px;
+      font-weight: 900;
+      color: var(--accent);
+    }
+
+    .card h3 {
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+      letter-spacing: -0.03em;
+    }
+
+    .card p {
+      color: var(--muted);
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .step {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.055);
+      border-radius: 22px;
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .step::after {
+      content: "";
+      position: absolute;
+      inset: auto -35px -35px auto;
+      width: 90px;
+      height: 90px;
+      background: radial-gradient(circle, rgba(82,240,255,0.2), transparent 70%);
+    }
+
+    .step small {
+      color: var(--accent);
+      font-weight: 900;
+    }
+
+    .step b {
+      display: block;
+      font-size: 1.05rem;
+      margin-top: 7px;
+    }
+
+    .industries {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.06);
+      padding: 12px 15px;
+      border-radius: 999px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 28px;
+      align-items: stretch;
+    }
+
+    .founder {
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(82,240,255,0.12), rgba(139,92,246,0.1));
+      border-radius: var(--radius);
+      padding: 34px;
+    }
+
+    .founder p {
+      color: var(--muted);
+      margin-top: 12px;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 12px;
+    }
+
+    .item {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.055);
+      border-radius: 22px;
+      padding: 18px;
+    }
+
+    .item b {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .item span {
+      color: var(--muted);
+    }
+
+    .cta {
+      border: 1px solid rgba(82, 240, 255, 0.28);
+      background:
+        radial-gradient(circle at 20% 20%, rgba(82,240,255,0.18), transparent 30%),
+        linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.045));
+      border-radius: 36px;
+      padding: 48px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: center;
+      box-shadow: var(--shadow);
+    }
+
+    .cta p {
+      color: var(--muted);
+      max-width: 760px;
+      margin-top: 12px;
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 34px 0;
+      color: var(--muted);
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 920px) {
+      .hero, .split, .cta {
+        grid-template-columns: 1fr;
+      }
+
+      .visual {
+        min-height: 520px;
+      }
+
+      .cards, .proof-row {
+        grid-template-columns: 1fr;
+      }
+
+      .flow {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .nav-links {
+        display: none;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .container {
+        width: min(100% - 24px, 1180px);
+      }
+
+      h1 {
+        font-size: 3.3rem;
+      }
+
+      .flow, .status-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .node {
+        position: relative;
+        inset: auto !important;
+        margin-bottom: 10px;
+      }
+
+      .orb, .visual::before {
+        display: none;
+      }
+
+      .visual {
+        min-height: auto;
+      }
+
+      .status-strip {
+        position: relative;
+        left: auto;
+        right: auto;
+        bottom: auto;
+        margin-top: 12px;
+      }
+
+      .cta {
+        padding: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="grain"></div>
+
+  <header>
+    <div class="container nav">
+      <a href="#top" class="brand" aria-label="DeepSecure Home">
+        <span class="mark"></span>
+        <span>DeepSecure™</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a href="#model">Model</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#use-cases">Use Cases</a>
+        <a href="#founder">Founder</a>
+      </nav>
+      <a class="btn btn-primary" href="mailto:VictorDeepSecure.ai@proton.me?subject=DeepSecure%20Demo%20Request">Request Demo</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="container hero">
+      <div>
+        <div class="eyebrow"><span class="pulse"></span> AI Governance Enforcement Architecture</div>
+        <h1><span class="gradient-text">Governance</span><br />that executes.</h1>
+        <p>
+          DeepSecure™ is a cloud-native AI governance enforcement architecture that embeds real-time control activation, escalation logic, and audit-grade evidence generation directly into SOC and cloud environments.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#model">See the Execution Model</a>
+          <a class="btn" href="#founder">Founder Profile</a>
+        </div>
+        <div class="proof-row">
+          <div class="proof"><strong>Runtime Control</strong>Policy translated into active operational conditions.</div>
+          <div class="proof"><strong>Escalation Integrity</strong>Human oversight tied to governed trigger states.</div>
+          <div class="proof"><strong>Sealed Evidence</strong>Audit-grade proof generated through execution.</div>
+        </div>
+      </div>
+
+      <div class="visual" aria-label="DeepSecure execution visual">
+        <div class="orb"></div>
+        <div class="node one"><span>Signal</span><strong>Telemetry Detected</strong></div>
+        <div class="node two"><span>Control</span><strong>Policy Evaluated</strong></div>
+        <div class="node three"><span>Escalation</span><strong>Oversight Triggered</strong></div>
+        <div class="node four"><span>Evidence</span><strong>Record Sealed</strong></div>
+        <div class="status-strip">
+          <div class="status"><b>Control State</b>Active</div>
+          <div class="status"><b>Risk Signal</b>Monitored</div>
+          <div class="status"><b>Evidence Chain</b>Preserved</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture" class="container">
+      <div class="section-head">
+        <div class="kicker">What Makes It Different</div>
+        <h2>From governance paperwork to operational enforcement.</h2>
+        <p>
+          DeepSecure™ positions governance as a live execution layer. It does not replace SOC, cloud, GRC, or audit systems. It connects governance obligations to real-time controls, escalation behavior, evidence capture, and corrective action.
+        </p>
+      </div>
+
+      <div class="cards">
+        <article class="card">
+          <div class="icon">01</div>
+          <h3>Policy-to-Runtime Translation</h3>
+          <p>Converts AI risk and governance obligations into operational control behavior that can be evaluated inside live environments.</p>
+        </article>
+        <article class="card">
+          <div class="icon">02</div>
+          <h3>Deterministic Escalation</h3>
+          <p>Defines when alerts, oversight, reviews, and human intervention should activate based on governed trigger conditions.</p>
+        </article>
+        <article class="card">
+          <div class="icon">03</div>
+          <h3>Audit-Grade Evidence</h3>
+          <p>Creates a defensible evidence trail showing what happened, why it happened, who reviewed it, and how correction occurred.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="model" class="container">
+      <div class="section-head">
+        <div class="kicker">Execution Chain</div>
+        <h2>The Governance Execution Model.</h2>
+        <p>
+          This public-safe model shows the DeepSecure™ concept at a high level while protecting proprietary implementation details.
+        </p>
+      </div>
+
+      <div class="flow">
+        <div class="step"><small>01</small><b>Obligation</b></div>
+        <div class="step"><small>02</small><b>Control</b></div>
+        <div class="step"><small>03</small><b>Signal</b></div>
+        <div class="step"><small>04</small><b>Trigger</b></div>
+        <div class="step"><small>05</small><b>Escalation</b></div>
+        <div class="step"><small>06</small><b>Action</b></div>
+        <div class="step"><small>07</small><b>Evidence</b></div>
+        <div class="step"><small>08</small><b>Correction + Sealing</b></div>
+      </div>
+    </section>
+
+    <section id="use-cases" class="container">
+      <div class="section-head">
+        <div class="kicker">Where It Applies</div>
+        <h2>Built for regulated, high-trust environments.</h2>
+        <p>
+          DeepSecure™ is designed for organizations that need to prove AI governance, cyber risk management, and operational accountability beyond static documentation.
+        </p>
+      </div>
+
+      <div class="industries">
+        <span class="pill">Healthcare AI Governance</span>
+        <span class="pill">Financial Services Risk</span>
+        <span class="pill">Defense & CMMC Alignment</span>
+        <span class="pill">Energy & Critical Infrastructure</span>
+        <span class="pill">SOC Automation</span>
+        <span class="pill">Cloud Security Governance</span>
+        <span class="pill">Audit Readiness</span>
+        <span class="pill">AI Risk Oversight</span>
+      </div>
+    </section>
+
+    <section id="founder" class="container">
+      <div class="split">
+        <div class="founder">
+          <div class="kicker">Founder</div>
+          <h2>Victor D. Patterson Sr.</h2>
+          <p>
+            Cybersecurity, GRC, cloud security, and AI governance practitioner focused on execution-layer governance, runtime control activation, escalation integrity, and audit-ready evidence systems.
+          </p>
+          <p>
+            DeepSecure™ reflects a practical operating model for moving AI governance from documentation into real-world enforcement behavior.
+          </p>
+          <div style="margin-top: 24px;">
+            <a class="btn btn-primary" href="mailto:VictorDeepSecure.ai@proton.me?subject=DeepSecure%20Discussion">Contact Victor</a>
+          </div>
+        </div>
+
+        <div class="timeline">
+          <div class="item"><b>ISACA Speaker</b><span>AI, deepfakes, governance, and digital ecosystem risk.</span></div>
+          <div class="item"><b>AI Governance Research</b><span>Focused on operational assurance, accountability, and control execution.</span></div>
+          <div class="item"><b>Security Operations Background</b><span>SOC, cloud, identity, vulnerability management, and enterprise IT operations.</span></div>
+          <div class="item"><b>Governance Execution Focus</b><span>Policy-to-runtime models, escalation chains, evidence continuity, and closed-loop correction.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="container">
+      <div class="cta">
+        <div>
+          <div class="kicker">Strategic Demo</div>
+          <h2>See how governance becomes executable.</h2>
+          <p>
+            Request a focused walkthrough of the public-safe DeepSecure™ concept, including runtime control framing, escalation logic, evidence continuity, and regulated AI governance use cases.
+          </p>
+        </div>
+        <a class="btn btn-primary" href="mailto:VictorDeepSecure.ai@proton.me?subject=DeepSecure%20Demo%20Request">Request Demo</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <span>© 2026 DeepSecure™. All rights reserved.</span>
+      <span>AI Governance Enforcement at the Execution Layer</span>
+    </div>
+  </footer>
+</body>
+</html>
